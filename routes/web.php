@@ -1,17 +1,17 @@
 <?php
-use App\Http\Controllers\EjerciciosSqlController;
+
+use App\Http\Controllers\CasaIglesiaController;
 use App\Http\Controllers\ConsultaEtapa1Controller;
+use App\Http\Controllers\EjerciciosSqlController;
 use App\Http\Controllers\InformeReunionController;
 use App\Http\Controllers\ReunionController;
-use App\Http\Controllers\UsuarioController;
-use App\Http\controllers\CasaIglesiaController;
 use App\Http\Controllers\RolController;
+use App\Http\Controllers\UsuarioController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', fn () => view('welcome'));
 
 Route::get('/salud', function () {
     DB::select('SELECT 1');
@@ -21,124 +21,33 @@ Route::get('/salud', function () {
         'base_de_datos' => 'conectada',
     ]);
 });
-Route::get('/roles', [RolController::class, 'index']);
-Route::get('/casas', function (CasaIglesiaController $controller) {
-    abort_unless(app()->environment('local'), 404);
 
-    return $controller->index();
-});
-Route::get('/casas/crear', function (CasaIglesiaController $controller) {
-    abort_unless(app()->environment('local'), 404);
+Route::middleware('acceso.demo')->group(function () {
+    Route::get('/roles', [RolController::class, 'index']);
 
-    return $controller->create();
-});
+    Route::get('/casas', [CasaIglesiaController::class, 'index']);
+    Route::get('/casas/crear', [CasaIglesiaController::class, 'create']);
+    Route::post('/casas', [CasaIglesiaController::class, 'store']);
+    Route::get('/casas/{id}/editar', [CasaIglesiaController::class, 'edit']);
+    Route::patch('/casas/{id}', [CasaIglesiaController::class, 'update']);
+    Route::patch('/casas/{id}/desactivar', [CasaIglesiaController::class, 'deactivate']);
 
-Route::post('/casas', function (CasaIglesiaController $controller, \Illuminate\Http\Request $request) {
-    abort_unless(app()->environment('local'), 404);
+    Route::get('/usuarios', [UsuarioController::class, 'index']);
+    Route::get('/usuarios/crear', [UsuarioController::class, 'create']);
+    Route::post('/usuarios', [UsuarioController::class, 'store']);
+    Route::get('/usuarios/{id}/editar', [UsuarioController::class, 'edit']);
+    Route::patch('/usuarios/{id}', [UsuarioController::class, 'update']);
+    Route::patch('/usuarios/{id}/desactivar', [UsuarioController::class, 'deactivate']);
 
-    return $controller->store($request);
-});
-Route::patch('/casas/{id}/desactivar', function (CasaIglesiaController $controller, int $id) {
-    abort_unless(app()->environment('local'), 404);
+    Route::view('/reuniones/crear', 'reuniones.crear');
+    Route::post('/reuniones', [ReunionController::class, 'store']);
 
-    return $controller->deactivate($id);
-});
-Route::get('/casas/{id}/editar', function (CasaIglesiaController $controller, int $id) {
-    abort_unless(app()->environment('local'), 404);
+    Route::get('/informes/reuniones', [InformeReunionController::class, 'index']);
 
-    return $controller->edit($id);
-});
+    Route::get('/etapa1/consultas/1', [ConsultaEtapa1Controller::class, 'casasActivas']);
+    Route::get('/etapa1/consultas/2', [ConsultaEtapa1Controller::class, 'lideresPorCasa']);
+    Route::get('/etapa1/consultas/3', [ConsultaEtapa1Controller::class, 'asistentesPorReunion']);
 
-Route::patch('/casas/{id}', function (
-    CasaIglesiaController $controller,
-    \Illuminate\Http\Request $request,
-    int $id
-) {
-    abort_unless(app()->environment('local'), 404);
-
-    return $controller->update($request, $id);
-});
-Route::get('/usuarios', function (UsuarioController $controller) {
-    abort_unless(app()->environment('local'), 404);
-
-    return $controller->index();
-});
-Route::get('/usuarios/crear', function (UsuarioController $controller) {
-    abort_unless(app()->environment('local'), 404);
-
-    return $controller->create();
-});
-
-Route::post('/usuarios', function (
-    UsuarioController $controller,
-    \Illuminate\Http\Request $request
-) {
-    abort_unless(app()->environment('local'), 404);
-
-    return $controller->store($request);
-});
-Route::get('/usuarios/{id}/editar', function (UsuarioController $controller, int $id) {
-    abort_unless(app()->environment('local'), 404);
-
-    return $controller->edit($id);
-});
-
-Route::patch('/usuarios/{id}', function (
-    UsuarioController $controller,
-    \Illuminate\Http\Request $request,
-    int $id
-) {
-    abort_unless(app()->environment('local'), 404);
-
-    return $controller->update($request, $id);
-});
-Route::patch('/usuarios/{id}/desactivar', function (UsuarioController $controller, int $id) {
-    abort_unless(app()->environment('local'), 404);
-
-    return $controller->deactivate($id);
-});
-Route::get('/reuniones/crear', function () {
-    abort_unless(app()->environment('local'), 404);
-
-    return view('reuniones.crear');
-});
-
-Route::post('/reuniones', function (
-    ReunionController $controller,
-    \Illuminate\Http\Request $request
-) {
-    abort_unless(app()->environment('local'), 404);
-
-    return $controller->store($request);
-});
-Route::get('/informes/reuniones', function (
-    InformeReunionController $controller,
-    \Illuminate\Http\Request $request
-) {
-    abort_unless(app()->environment('local'), 404);
-
-    return $controller->index($request);
-});
-if (app()->environment('local')) {
-    Route::get(
-        '/etapa1/consultas/1',
-        [ConsultaEtapa1Controller::class, 'casasActivas']
-    );
-
-    Route::get(
-        '/etapa1/consultas/2',
-        [ConsultaEtapa1Controller::class, 'lideresPorCasa']
-    );
-
-    Route::get(
-        '/etapa1/consultas/3',
-        [ConsultaEtapa1Controller::class, 'asistentesPorReunion']
-    );
-}if (app()->environment('local')) {
     Route::view('/etapa1/sql', 'consultas.ejercicios');
-
-    Route::post(
-        '/etapa1/sql/ejecutar',
-        [EjerciciosSqlController::class, 'ejecutar']
-    );
-}
+    Route::post('/etapa1/sql/ejecutar', [EjerciciosSqlController::class, 'ejecutar']);
+});
