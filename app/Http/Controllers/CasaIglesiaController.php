@@ -1,0 +1,83 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class CasaIglesiaController extends Controller
+{
+    public function index(): JsonResponse
+    {
+        $casas = DB::table('casa_iglesia')
+            ->select('id_casa', 'nombre_casa', 'direccion', 'estado')
+            ->orderBy('nombre_casa')
+            ->get();
+
+        return response()->json($casas);
+    }
+
+    public function create()
+    {
+        return view('casas.crear');
+    }
+
+    public function store(Request $request)
+    {
+        $datos = $request->validate([
+            'nombre_casa' => ['required', 'string', 'max:100'],
+            'direccion' => ['required', 'string', 'max:200'],
+        ]);
+
+        DB::table('casa_iglesia')->insert([
+            'nombre_casa' => $datos['nombre_casa'],
+            'direccion' => $datos['direccion'],
+            'estado' => true,
+            'id_lider_responsable' => null,
+        ]);
+
+        return redirect('/casas');
+    }
+    public function deactivate(int $id)
+{
+    $actualizadas = DB::table('casa_iglesia')
+        ->where('id_casa', $id)
+        ->where('estado', true)
+        ->update(['estado' => false]);
+
+    abort_if($actualizadas === 0, 404);
+
+    return redirect('/casas');
+}
+public function edit(int $id)
+{
+    $casa = DB::table('casa_iglesia')
+        ->where('id_casa', $id)
+        ->first();
+
+    abort_if($casa === null, 404);
+
+    return view('casas.editar', ['casa' => $casa]);
+}
+
+public function update(Request $request, int $id)
+{
+    $datos = $request->validate([
+        'nombre_casa' => ['required', 'string', 'max:100'],
+        'direccion' => ['required', 'string', 'max:200'],
+    ]);
+
+    $existe = DB::table('casa_iglesia')
+        ->where('id_casa', $id)
+        ->exists();
+
+    abort_unless($existe, 404);
+
+    DB::table('casa_iglesia')
+        ->where('id_casa', $id)
+        ->update($datos);
+
+    return redirect('/casas');
+}
+}
