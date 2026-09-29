@@ -19,25 +19,42 @@
         @csrf
         @method('PATCH')
 
-        <label for="nombre_casa">Nombre</label>
-        <input id="nombre_casa" name="nombre_casa"
-               value="{{ old('nombre_casa', $casa->nombre_casa) }}"
-               required maxlength="100">
+        <p>
+            <label for="nombre_casa">Nombre</label>
+            <input id="nombre_casa" name="nombre_casa"
+                   value="{{ old('nombre_casa', $casa->nombre_casa) }}"
+                   required maxlength="100">
+        </p>
 
-        <label for="direccion">Dirección</label>
-        <input id="direccion" name="direccion"
-               value="{{ old('direccion', $casa->direccion) }}"
-               required maxlength="200">
+        <p>
+            <label for="direccion">Dirección</label>
+            <input id="direccion" name="direccion"
+                   value="{{ old('direccion', $casa->direccion) }}"
+                   required maxlength="200">
+        </p>
+
+        <p>
+            <label for="id_lider_responsable">Líder responsable</label>
+            <select id="id_lider_responsable" name="id_lider_responsable">
+                <option value="">Sin líder asignado</option>
+                @foreach ($lideres as $lider)
+                    <option value="{{ $lider->id_usuario }}"
+                        @selected(old('id_lider_responsable', $casa->id_lider_responsable) == $lider->id_usuario)>
+                        {{ $lider->nombre }}
+                    </option>
+                @endforeach
+            </select>
+        </p>
 
         <button type="submit">Guardar cambios</button>
     </form>
-    @if ($casa->estado)
-    <form method="POST" action="/casas/{{ $casa->id_casa }}/desactivar">
-        @csrf
-        @method('PATCH')
 
-        <button type="submit">Desactivar casa</button>
-    </form>
-@endif
+    @if ($casa->estado)
+        <form method="POST" action="/casas/{{ $casa->id_casa }}/desactivar">
+            @csrf
+            @method('PATCH')
+            <button type="submit">Desactivar casa</button>
+        </form>
+    @endif
 </body>
 </html>
