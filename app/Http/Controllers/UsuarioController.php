@@ -129,7 +129,7 @@ public function update(Request $request, int $id)
         ->where('id_usuario', $id)
         ->update($datos);
 
-    return redirect('/usuarios');
+    return redirect('/panel/usuarios');
 }
 public function deactivate(int $id)
 {

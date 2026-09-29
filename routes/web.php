@@ -24,6 +24,13 @@ Route::get('/salud', function () {
 Route::middleware('acceso.demo')->group(function () {
     Route::get('/roles', [RolController::class, 'index']);
 
+    // Pantalla para presentar las casas.
+    Route::view('/panel/casas', 'panel.casas');
+    Route::view('/panel/usuarios', 'panel.usuarios');
+    Route::view('/panel/reuniones', 'panel.reuniones');
+    Route::view('/panel/consultas', 'panel.consultas');
+    Route::view('/panel', 'panel.inicio');
+
     Route::get('/casas', [CasaIglesiaController::class, 'index']);
     Route::get('/casas/crear', [CasaIglesiaController::class, 'create']);
     Route::post('/casas', [CasaIglesiaController::class, 'store']);

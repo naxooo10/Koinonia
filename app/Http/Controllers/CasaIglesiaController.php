@@ -38,7 +38,7 @@ class CasaIglesiaController extends Controller
             'id_lider_responsable' => null,
         ]);
 
-        return redirect('/casas');
+        return redirect('/panel/casas');
     }
 
     public function edit(int $id)

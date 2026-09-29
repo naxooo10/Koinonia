@@ -2,13 +2,59 @@
 <html lang="es">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Registrar reunión | Koinonía</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        label {
+            display: inline-block;
+            margin: 8px 0;
+        }
+
+        input[type="date"],
+        input[type="text"],
+        select {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 10px;
+        }
+
+        button {
+            padding: 10px 16px;
+            margin-top: 12px;
+            cursor: pointer;
+        }
+
+        fieldset {
+            margin-top: 20px;
+            padding: 15px;
+        }
+
+        .error {
+            color: #b00020;
+        }
+
+        .exito {
+            margin-top: 20px;
+            padding: 16px;
+            background: #e7f6e7;
+            border: 1px solid #89c489;
+        }
+    </style>
 </head>
 <body>
+    <p><a href="/panel">← Volver al panel</a></p>
+
     <h1>Registrar reunión y asistencia</h1>
 
     @if ($errors->any())
-        <ul>
+        <ul class="error">
             @foreach ($errors->all() as $error)
                 <li>{{ $error }}</li>
             @endforeach
@@ -37,35 +83,29 @@
 
         @if (! $lider)
             <p>Esta casa necesita un líder responsable activo.</p>
-
-            <a href="/casas/{{ $casa->id_casa }}/editar">
-                Asignar líder
-            </a>
+            <a href="/casas/{{ $casa->id_casa }}/editar">Asignar líder</a>
         @elseif ($participantes->isEmpty())
             <p>Esta casa todavía no tiene participantes activos.</p>
         @else
             <p>Líder responsable: {{ $lider->nombre }}</p>
 
-            <form method="POST" action="/reuniones">
+            <form id="formulario-reunion" method="POST" action="/reuniones">
                 @csrf
 
-                <input type="hidden" name="id_casa"
-                       value="{{ $casa->id_casa }}">
-
-                <input type="hidden" name="id_lider"
-                       value="{{ $lider->id_usuario }}">
+                <input type="hidden" name="id_casa" value="{{ $casa->id_casa }}">
+                <input type="hidden" name="id_lider" value="{{ $lider->id_usuario }}">
 
                 <p>
-                    <label for="fecha">Fecha</label>
+                    <label for="fecha">Fecha</label><br>
                     <input id="fecha" name="fecha" type="date"
                            value="{{ old('fecha') }}" required>
                 </p>
 
                 <p>
-                    <label for="tema">Tema</label>
-                    <input id="tema" name="tema"
+                    <label for="tema">Tema</label><br>
+                    <input id="tema" name="tema" type="text"
                            value="{{ old('tema') }}"
-                           required maxlength="150">
+                           maxlength="150" required>
                 </p>
 
                 <fieldset>
@@ -87,11 +127,76 @@
                     @endforeach
                 </fieldset>
 
-                <button type="submit">
-                    Guardar reunión y asistencia
-                </button>
+                <button type="submit">Guardar reunión y asistencia</button>
             </form>
+
+            <div id="resultado" role="status" aria-live="polite"></div>
         @endif
     @endif
+
+    <script>
+        const formulario = document.getElementById('formulario-reunion');
+
+        if (formulario) {
+            formulario.addEventListener('submit', async (evento) => {
+                evento.preventDefault();
+
+                const resultado = document.getElementById('resultado');
+                const boton = formulario.querySelector('button[type="submit"]');
+                const seleccionados = formulario.querySelectorAll(
+                    'input[name="asistentes[]"]:checked'
+                );
+
+                resultado.replaceChildren();
+                resultado.className = '';
+
+                if (seleccionados.length === 0) {
+                    resultado.textContent = 'Selecciona al menos un asistente.';
+                    resultado.className = 'error';
+                    return;
+                }
+
+                boton.disabled = true;
+                boton.textContent = 'Guardando...';
+
+                try {
+                    const respuesta = await fetch(formulario.action, {
+                        method: 'POST',
+                        body: new FormData(formulario),
+                        headers: { Accept: 'application/json' }
+                    });
+
+                    const datos = await respuesta.json();
+
+                    if (!respuesta.ok) {
+                        const errores = Object.values(datos.errors ?? {}).flat();
+                        throw new Error(
+                            errores.join(' ') || datos.message || 'No se pudo guardar la reunión.'
+                        );
+                    }
+
+                    resultado.className = 'exito';
+
+                    const mensaje = document.createElement('p');
+                    mensaje.textContent =
+                        `Reunión #${datos.id_reunion} guardada. ` +
+                        `Asistentes registrados: ${datos.asistentes_registrados}.`;
+
+                    const enlace = document.createElement('a');
+                    enlace.href = '/panel/reuniones';
+                    enlace.textContent = 'Ver informe de reuniones';
+
+                    resultado.append(mensaje, enlace);
+                    formulario.hidden = true;
+                } catch (error) {
+                    resultado.textContent = error.message;
+                    resultado.className = 'error';
+                } finally {
+                    boton.disabled = false;
+                    boton.textContent = 'Guardar reunión y asistencia';
+                }
+            });
+        }
+    </script>
 </body>
 </html>
