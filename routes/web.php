@@ -7,7 +7,6 @@ use App\Http\Controllers\InformeReunionController;
 use App\Http\Controllers\ReunionController;
 use App\Http\Controllers\RolController;
 use App\Http\Controllers\UsuarioController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
@@ -39,7 +38,7 @@ Route::middleware('acceso.demo')->group(function () {
     Route::patch('/usuarios/{id}', [UsuarioController::class, 'update']);
     Route::patch('/usuarios/{id}/desactivar', [UsuarioController::class, 'deactivate']);
 
-    Route::view('/reuniones/crear', 'reuniones.crear');
+    Route::get('/reuniones/crear', [ReunionController::class, 'create']);
     Route::post('/reuniones', [ReunionController::class, 'store']);
 
     Route::get('/informes/reuniones', [InformeReunionController::class, 'index']);

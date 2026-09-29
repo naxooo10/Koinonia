@@ -8,15 +8,78 @@ use Illuminate\Validation\ValidationException;
 
 class ReunionController extends Controller
 {
+    public function create(Request $request)
+    {
+        $datos = $request->validate([
+            'id_casa' => [
+                'nullable',
+                'integer',
+                'exists:casa_iglesia,id_casa',
+            ],
+        ]);
+
+        $casas = DB::table('casa_iglesia')
+            ->where('estado', true)
+            ->orderBy('nombre_casa')
+            ->get();
+
+        $casa = null;
+        $lider = null;
+        $participantes = collect();
+
+        if (! empty($datos['id_casa'])) {
+            $casa = $casas->firstWhere('id_casa', $datos['id_casa']);
+
+            abort_if($casa === null, 404);
+
+            $lider = DB::table('usuario as u')
+                ->join('rol as r', 'r.id_rol', '=', 'u.id_rol')
+                ->where('u.id_usuario', $casa->id_lider_responsable)
+                ->where('u.estado', true)
+                ->where('r.nombre_rol', 'Líder')
+                ->select('u.id_usuario', 'u.nombre')
+                ->first();
+
+            $participantes = DB::table('usuario as u')
+                ->join('rol as r', 'r.id_rol', '=', 'u.id_rol')
+                ->where('u.id_casa_asignada', $casa->id_casa)
+                ->where('u.estado', true)
+                ->where('r.nombre_rol', 'Participante')
+                ->select('u.id_usuario', 'u.nombre')
+                ->orderBy('u.nombre')
+                ->get();
+        }
+
+        return view('reuniones.crear', compact(
+            'casas',
+            'casa',
+            'lider',
+            'participantes'
+        ));
+    }
+
     public function store(Request $request)
     {
         $datos = $request->validate([
-            'id_casa' => ['required', 'integer', 'exists:casa_iglesia,id_casa'],
-            'id_lider' => ['required', 'integer', 'exists:usuario,id_usuario'],
+            'id_casa' => [
+                'required',
+                'integer',
+                'exists:casa_iglesia,id_casa',
+            ],
+            'id_lider' => [
+                'required',
+                'integer',
+                'exists:usuario,id_usuario',
+            ],
             'fecha' => ['required', 'date'],
             'tema' => ['required', 'string', 'max:150'],
             'asistentes' => ['required', 'array', 'min:1'],
-            'asistentes.*' => ['required', 'integer', 'distinct', 'exists:usuario,id_usuario'],
+            'asistentes.*' => [
+                'required',
+                'integer',
+                'distinct',
+                'exists:usuario,id_usuario',
+            ],
         ]);
 
         $idReunion = DB::transaction(function () use ($datos) {
@@ -34,7 +97,7 @@ class ReunionController extends Controller
                     ->where('r.nombre_rol', 'Líder')
                     ->exists();
 
-            if (!$liderValido) {
+            if (! $liderValido) {
                 throw ValidationException::withMessages([
                     'id_lider' => 'El líder no está autorizado para esta casa.',
                 ]);
