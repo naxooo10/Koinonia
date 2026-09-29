@@ -25,7 +25,7 @@ class InformeReunionController extends Controller
             'min' => 'El campo :attribute debe ser como mínimo :min.',
         ], [
             'mes' => 'mes',
-            'anio' => 'año',
+            'anio' => 'anio',
             'id_lider' => 'identificador del líder',
             'id_casa' => 'identificador de la casa',
             'id_participante' => 'identificador del participante',
