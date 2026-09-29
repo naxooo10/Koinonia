@@ -16,8 +16,11 @@ return Application::configure(basePath: dirname(__DIR__))
         'acceso.demo' => \App\Http\Middleware\AccesoDemo::class,
     ]);
 })
-    ->withExceptions(function (Exceptions $exceptions): void {
+        ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
-            fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
+            fn (Request $request) =>
+                $request->is('api/*')
+                || $request->is('informes/reuniones')
+                || $request->expectsJson()
         );
     })->create();

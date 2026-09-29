@@ -18,6 +18,18 @@ class InformeReunionController extends Controller
             'id_casa' => ['nullable', 'integer', 'min:1'],
             'id_participante' => ['nullable', 'integer', 'min:1'],
             'cantidad_asistentes' => ['nullable', 'integer', 'min:0'],
+        ], [
+            'required' => 'El campo :attribute es obligatorio.',
+            'integer' => 'El campo :attribute debe ser un número entero.',
+            'between' => 'El campo :attribute debe estar entre :min y :max.',
+            'min' => 'El campo :attribute debe ser como mínimo :min.',
+        ], [
+            'mes' => 'mes',
+            'anio' => 'año',
+            'id_lider' => 'identificador del líder',
+            'id_casa' => 'identificador de la casa',
+            'id_participante' => 'identificador del participante',
+            'cantidad_asistentes' => 'número de asistentes',
         ]);
 
         $inicio = Carbon::create(
@@ -30,7 +42,12 @@ class InformeReunionController extends Controller
 
         $consulta = DB::table('reunion as r')
             ->join('casa_iglesia as c', 'c.id_casa', '=', 'r.id_casa')
-            ->leftJoin('usuario as l', 'l.id_usuario', '=', 'c.id_lider_responsable')
+            ->leftJoin(
+                'usuario as l',
+                'l.id_usuario',
+                '=',
+                'c.id_lider_responsable'
+            )
             ->select(
                 'r.id_reunion',
                 'r.fecha',
@@ -47,7 +64,10 @@ class InformeReunionController extends Controller
             ->where('r.fecha', '<', $fin->toDateString());
 
         if ($request->filled('id_lider')) {
-            $consulta->where('c.id_lider_responsable', $filtros['id_lider']);
+            $consulta->where(
+                'c.id_lider_responsable',
+                $filtros['id_lider']
+            );
         }
 
         if ($request->filled('id_casa')) {
