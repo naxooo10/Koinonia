@@ -117,4 +117,19 @@ class CasaIglesiaController extends Controller
 
         return redirect('/casas');
     }
+    public function activate(int $id)
+{
+    $casa = DB::table('casa_iglesia')
+        ->where('id_casa', $id)
+        ->first();
+
+    abort_if($casa === null, 404);
+
+    DB::table('casa_iglesia')
+        ->where('id_casa', $id)
+        ->update(['estado' => 1]);
+
+    return redirect('/panel/casas');
 }
+}
+
