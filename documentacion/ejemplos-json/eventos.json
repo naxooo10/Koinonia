@@ -1,0 +1,10 @@
+{
+  "_id": 1,
+  "titulo": "Encuentro de Casas Iglesias",
+  "descripcion": "Encuentro para compartir y coordinar actividades.",
+  "fecha_hora": {
+    "$date": "2026-11-07T18:00:00Z"
+  },
+  "id_creador": 1,
+  "id_casa": 1
+}

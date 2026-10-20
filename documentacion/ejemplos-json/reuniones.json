@@ -1,0 +1,9 @@
+{
+  "_id": 1,
+  "fecha": {
+    "$date": "2026-10-18T00:00:00Z"
+  },
+  "tema": "La solidaridad",
+  "id_casa": 1,
+  "asistentes": [1]
+}
