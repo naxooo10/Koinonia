@@ -74,18 +74,23 @@ fecha y casa sin cargar todo su historial en un único documento.
 ### Reunión y asistencia
 
 Cada reunión contiene un arreglo asistentes con los identificadores
-de los usuarios que asistieron.
+de los usuarios que asistieron. Estos identificadores referencian
+documentos de la colección usuarios.
 
 La asistencia se integra porque se registra y consulta junto con
 la reunión. No se copian nombres, correos ni contraseñas.
 
-Esta decisión supone una cantidad acotada de asistentes por reunión
-de Casa Iglesia. El límite debe definirse y validarse antes de
-implementar el modelo.
+Como supuesto de diseño, se consideran reuniones de hasta 50 asistentes.
+Este número no es un requisito confirmado por el cliente y debe
+validarse antes de implementar el modelo. No representa un límite
+técnico de MongoDB.
+
+El arreglo no debe contener identificadores repetidos.
 
 El historial completo de reuniones no se guarda dentro del usuario.
-Si se necesitaran encuentros masivos o paginación independiente de
-asistencias, se evaluaría una colección separada.
+Si se requieren reuniones que superen el tamaño previsto o consultas
+paginadas de asistencia, se revisará esta decisión y se evaluará
+una colección asistencias separada.
 
 ### Evento y creador
 

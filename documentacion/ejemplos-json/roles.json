@@ -1,4 +1,14 @@
-{
-  "_id": 1,
-  "nombre_rol": "Administrador"
-}
+[
+  {
+    "_id": 1,
+    "nombre_rol": "Administrador"
+  },
+  {
+    "_id": 2,
+    "nombre_rol": "Líder"
+  },
+  {
+    "_id": 3,
+    "nombre_rol": "Participante"
+  }
+]

@@ -1,9 +1,29 @@
-{
-  "_id": 1,
-  "nombre": "Daniel Rojas",
-  "email": "daniel.rojas@example.com",
-  "password": "$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.",
-  "estado": true,
-  "id_rol": 1,
-  "id_casa_asignada": null
-}
+[
+  {
+    "_id": 1,
+    "nombre": "Daniel Rojas",
+    "email": "daniel.rojas@example.com",
+    "password": "$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.",
+    "estado": true,
+    "id_rol": 1,
+    "id_casa_asignada": null
+  },
+  {
+    "_id": 2,
+    "nombre": "Camila Soto",
+    "email": "camila.soto@example.com",
+    "password": "$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.",
+    "estado": true,
+    "id_rol": 2,
+    "id_casa_asignada": 1
+  },
+  {
+    "_id": 3,
+    "nombre": "Julian Gonzalez",
+    "email": "julian.gonzalez@example.com",
+    "password": "$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.",
+    "estado": true,
+    "id_rol": 3,
+    "id_casa_asignada": 1
+  }
+]
