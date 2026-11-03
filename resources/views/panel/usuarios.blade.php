@@ -1,39 +1,41 @@
-<!doctype html>
-<html lang="es">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Usuarios | Koinonía</title>
-    <style>
-        body { font-family: Arial, sans-serif; max-width: 1100px; margin: 40px auto; padding: 0 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
-        th { background: #f3f3f3; }
-        .error { color: #b00020; }
-    </style>
-</head>
-<body>
-    <p><a href="/panel/casas">← Casas Iglesia</a></p>
-    <h1>Usuarios</h1>
+@extends('layouts.koinonia')
 
-    <p><a href="/usuarios/crear">+ Crear usuario</a></p>
+@section('titulo', 'Usuarios')
+@section('icono', 'users')
+@section('tipo', 'listado-ui')
+@section('descripcion', 'Personas, líderes y participantes que forman parte de Koinonía.')
+
+@section('encabezado')
+Usuarios
+@endsection
+
+@section('contenido')
+<p><a href="/panel/casas">← Casas Iglesia</a></p>
+    
+
+    <nav class="ui-herramientas"><a class="ui-primario" href="/usuarios/crear">+ Crear usuario</a></nav>
     <p id="mensaje">Cargando usuarios...</p>
 
-    <table>
+    <div class="ui-listado-busqueda"><svg class="icono" aria-hidden="true"><use href="#i-search"/></svg><label class="solo-lectores" for="ui-buscar-listado">Filtrar el listado cargado</label><input id="ui-buscar-listado" data-ui-buscar type="search" placeholder="Buscar en este listado…" autocomplete="off" aria-describedby="ui-estado-listado"></div><p class="ui-listado-contador" id="ui-estado-listado" role="status" aria-live="polite"></p>
+<div class="tabla-ui">
+<table>
         <thead>
             <tr>
                 <th>Nombre</th>
                 <th>Correo</th>
                 <th>Rol</th>
-                <th>Casa asignada</th>
+                <th>Casas de pertenencia</th>
                 <th>Estado</th>
                 <th>Acción</th>
             </tr>
         </thead>
         <tbody id="filas"></tbody>
     </table>
+</div>
+@endsection
 
-    <script>
+@push('scripts')
+<script>
         async function cargarUsuarios() {
             const mensaje = document.getElementById('mensaje');
             const filas = document.getElementById('filas');
@@ -84,5 +86,4 @@
 
         cargarUsuarios();
     </script>
-</body>
-</html>
+@endpush

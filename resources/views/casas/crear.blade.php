@@ -1,46 +1,18 @@
-<!doctype html>
-<html lang="es">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Nueva Casa Iglesia | Koinonía</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 700px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
+@extends('layouts.koinonia')
 
-        label {
-            display: block;
-            margin: 18px 0 6px;
-            font-weight: bold;
-        }
+@section('titulo', 'Nueva Casa Iglesia')
+@section('icono', 'home')
+@section('tipo', 'formulario-ui')
+@section('descripcion', 'Un nuevo lugar para encontrarnos y crecer en comunidad.')
 
-        input {
-            box-sizing: border-box;
-            width: 100%;
-            padding: 10px;
-        }
+@section('encabezado')
+Nueva Casa Iglesia
+@endsection
 
-        button {
-            margin-top: 24px;
-            padding: 10px 18px;
-            cursor: pointer;
-        }
+@section('contenido')
+<p><a href="/panel/casas">← Volver a Casas Iglesia</a></p>
 
-        .errores {
-            color: #b00020;
-            background: #fff1f1;
-            padding: 12px 16px;
-        }
-    </style>
-</head>
-<body>
-    <p><a href="/panel/casas">← Volver a Casas Iglesia</a></p>
-
-    <h1>Nueva Casa Iglesia</h1>
+    
 
     @if ($errors->any())
         <ul class="errores">
@@ -73,5 +45,4 @@
 
         <button type="submit">Guardar casa</button>
     </form>
-</body>
-</html>
+@endsection

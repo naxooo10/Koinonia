@@ -5,5 +5,16 @@
   },
   "tema": "La solidaridad",
   "id_casa": 1,
-  "asistentes": [2, 3]
+  "asistencia": [
+    {
+      "usuario_id": 3,
+      "estado": "presente",
+      "justificacion": null
+    },
+    {
+      "usuario_id": 4,
+      "estado": "ausente",
+      "justificacion": "Informó que no podía asistir por enfermedad."
+    }
+  ]
 }

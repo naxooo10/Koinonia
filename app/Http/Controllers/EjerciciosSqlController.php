@@ -4,80 +4,168 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use MongoDB\Collection;
+use MongoDB\Driver\Command;
 
 class EjerciciosSqlController extends Controller
 {
     public function ejecutar(): JsonResponse
     {
-        // Preparación: tabla exclusiva de ejercicios.
-        DB::statement(
-            'CREATE OR REPLACE TABLE evidencia_casas (
-                id_evidencia INT AUTO_INCREMENT PRIMARY KEY,
-                nombre_casa VARCHAR(100) NOT NULL,
-                estado TINYINT(1) NOT NULL DEFAULT 1
-            )'
-        );
+        $nombreColeccion = 'evidencia_casas_' . bin2hex(random_bytes(8));
 
-        // 2 ALTER
-        DB::statement(
-            'ALTER TABLE evidencia_casas
-             ADD COLUMN direccion VARCHAR(200) NULL'
-        );
+        $resultado = DB::connection('mongodb')
+            ->table($nombreColeccion)
+            ->raw(function (Collection $coleccion) use ($nombreColeccion) {
+                $gestor = $coleccion->getManager();
+                $base = $coleccion->getDatabaseName();
 
-        DB::statement(
-            'ALTER TABLE evidencia_casas
-             MODIFY COLUMN nombre_casa VARCHAR(150) NOT NULL'
-        );
+                $esquema = [
+                    'bsonType' => 'object',
+                    'required' => [
+                        '_id',
+                        'nombre_casa',
+                        'estado',
+                    ],
+                    'additionalProperties' => false,
+                    'properties' => [
+                        '_id' => [
+                            'bsonType' => ['int', 'long'],
+                        ],
+                        'nombre_casa' => [
+                            'bsonType' => 'string',
+                            'maxLength' => 100,
+                        ],
+                        'estado' => [
+                            'bsonType' => 'bool',
+                        ],
+                    ],
+                ];
 
-        // 3 INSERT
-        $insert1 = DB::affectingStatement(
-            "INSERT INTO evidencia_casas (nombre_casa, direccion, estado)
-             VALUES ('Casa Prueba A', 'Dirección ficticia A', 1)"
-        );
+                $gestor->executeCommand($base, new Command([
+                    'create' => $nombreColeccion,
+                    'validator' => [
+                        '$jsonSchema' => $esquema,
+                    ],
+                    'validationLevel' => 'strict',
+                    'validationAction' => 'error',
+                ]));
 
-        $insert2 = DB::affectingStatement(
-            "INSERT INTO evidencia_casas (nombre_casa, direccion, estado)
-             VALUES ('Casa Prueba B', 'Dirección ficticia B', 1)"
-        );
+                try {
+                    $esquema['properties']['direccion'] = [
+                        'bsonType' => ['string', 'null'],
+                        'maxLength' => 200,
+                    ];
 
-        $insert3 = DB::affectingStatement(
-            "INSERT INTO evidencia_casas (nombre_casa, direccion, estado)
-             VALUES ('Casa Prueba C', 'Dirección ficticia C', 1)"
-        );
+                    $gestor->executeCommand($base, new Command([
+                        'collMod' => $nombreColeccion,
+                        'validator' => [
+                            '$jsonSchema' => $esquema,
+                        ],
+                    ]));
 
-        // 2 UPDATE
-        $update1 = DB::affectingStatement(
-            "UPDATE evidencia_casas
-             SET direccion = 'Dirección ficticia A corregida'
-             WHERE nombre_casa = 'Casa Prueba A'"
-        );
+                    $esquema['properties']['nombre_casa']['maxLength'] = 150;
 
-        $update2 = DB::affectingStatement(
-            "UPDATE evidencia_casas
-             SET estado = 0
-             WHERE nombre_casa = 'Casa Prueba B'"
-        );
+                    $gestor->executeCommand($base, new Command([
+                        'collMod' => $nombreColeccion,
+                        'validator' => [
+                            '$jsonSchema' => $esquema,
+                        ],
+                    ]));
 
-        // 2 DELETE
-        $delete1 = DB::affectingStatement(
-            "DELETE FROM evidencia_casas
-             WHERE nombre_casa = 'Casa Prueba B'"
-        );
+                    $insert1 = $coleccion->insertOne([
+                        '_id' => 1,
+                        'nombre_casa' => 'Casa Prueba A',
+                        'direccion' => 'Dirección ficticia A',
+                        'estado' => true,
+                    ]);
 
-        $delete2 = DB::affectingStatement(
-            "DELETE FROM evidencia_casas
-             WHERE nombre_casa = 'Casa Prueba C'"
-        );
+                    $insert2 = $coleccion->insertOne([
+                        '_id' => 2,
+                        'nombre_casa' => 'Casa Prueba B',
+                        'direccion' => 'Dirección ficticia B',
+                        'estado' => true,
+                    ]);
 
-        // 1 DROP
-        DB::statement('DROP TABLE evidencia_casas');
+                    $insert3 = $coleccion->insertOne([
+                        '_id' => 3,
+                        'nombre_casa' => 'Casa Prueba C',
+                        'direccion' => 'Dirección ficticia C',
+                        'estado' => true,
+                    ]);
 
-        return response()->json([
-            'alter_ejecutados' => 2,
-            'insert_filas' => [$insert1, $insert2, $insert3],
-            'update_filas' => [$update1, $update2],
-            'delete_filas' => [$delete1, $delete2],
-            'tabla_de_ejercicios_eliminada' => true,
-        ]);
+                    $update1 = $coleccion->updateOne(
+                        ['_id' => 1],
+                        [
+                            '$set' => [
+                                'direccion' =>
+                                    'Dirección ficticia A corregida',
+                            ],
+                        ]
+                    );
+
+                    $update2 = $coleccion->updateOne(
+                        ['_id' => 2],
+                        [
+                            '$set' => [
+                                'estado' => false,
+                            ],
+                        ]
+                    );
+
+                    $opciones = [
+                        'sort' => ['_id' => 1],
+                        'typeMap' => [
+                            'root' => 'array',
+                            'document' => 'array',
+                            'array' => 'array',
+                        ],
+                    ];
+
+                    $antesDeEliminar = $coleccion
+                        ->find([], $opciones)
+                        ->toArray();
+
+                    $delete1 = $coleccion->deleteOne([
+                        '_id' => 2,
+                    ]);
+
+                    $delete2 = $coleccion->deleteOne([
+                        '_id' => 3,
+                    ]);
+
+                    $despuesDeEliminar = $coleccion
+                        ->find([], $opciones)
+                        ->toArray();
+
+                    $datos = [
+                        'motor' => 'MongoDB',
+                        'coleccion_temporal' => $nombreColeccion,
+                        'cambios_validacion_ejecutados' => 2,
+                        'insert_documentos' => [
+                            $insert1->getInsertedCount(),
+                            $insert2->getInsertedCount(),
+                            $insert3->getInsertedCount(),
+                        ],
+                        'update_documentos' => [
+                            $update1->getModifiedCount(),
+                            $update2->getModifiedCount(),
+                        ],
+                        'delete_documentos' => [
+                            $delete1->getDeletedCount(),
+                            $delete2->getDeletedCount(),
+                        ],
+                        'antes_de_eliminar' => $antesDeEliminar,
+                        'despues_de_eliminar' => $despuesDeEliminar,
+                    ];
+                } finally {
+                    $coleccion->drop();
+                }
+
+                $datos['coleccion_temporal_eliminada'] = true;
+
+                return $datos;
+            });
+
+        return response()->json($resultado);
     }
 }

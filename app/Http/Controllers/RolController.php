@@ -9,29 +9,15 @@ class RolController extends Controller
 {
     public function index(): JsonResponse
     {
-        $roles = DB::table('rol')
-            ->select('id_rol', 'nombre_rol')
-            ->orderBy('id_rol')
-            ->get();
+        $roles = DB::connection('mongodb')
+            ->table('roles')
+            ->orderBy('_id')
+            ->get()
+            ->map(fn ($rol) => [
+                'id_rol' => $rol->id,
+                'nombre_rol' => $rol->nombre_rol,
+            ]);
 
         return response()->json($roles);
     }
-    public function create()
-{
-    $roles = DB::table('rol')
-        ->select('id_rol', 'nombre_rol')
-        ->orderBy('id_rol')
-        ->get();
-
-    $casas = DB::table('casa_iglesia')
-        ->where('estado', true)
-        ->select('id_casa', 'nombre_casa')
-        ->orderBy('nombre_casa')
-        ->get();
-
-    return view('usuarios.crear', [
-        'roles' => $roles,
-        'casas' => $casas,
-    ]);
-}
 }

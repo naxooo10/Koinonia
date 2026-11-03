@@ -4,28 +4,43 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use MongoDB\Collection;
 
 class CasaIglesiaSeeder extends Seeder
 {
     public function run(): void
     {
         $casas = [
-            ['nombre_casa' => 'Casa Centro Demo', 'direccion' => 'Dirección ficticia 100'],
-            ['nombre_casa' => 'Casa Norte Demo', 'direccion' => 'Dirección ficticia 200'],
+            [
+                '_id' => 1,
+                'nombre_casa' => 'Casa Iglesia Quilpue',
+                'direccion' => 'Los Aromos 123, Quilpue, Chile',
+                'estado' => true,
+                'id_lider_responsable' => null,
+            ],
+            [
+                '_id' => 4,
+                'nombre_casa' => 'Casa Iglesia Viña del Mar',
+                'direccion' => 'Av. Libertad 450, Viña del Mar, Chile',
+                'estado' => true,
+                'id_lider_responsable' => null,
+            ],
         ];
 
-        foreach ($casas as $casa) {
-            $existe = DB::table('casa_iglesia')
-                ->where('nombre_casa', $casa['nombre_casa'])
-                ->exists();
+        DB::connection('mongodb')
+            ->table('casas_iglesia')
+            ->raw(function (Collection $coleccion) use ($casas): void {
+                foreach ($casas as $casa) {
+                    $id = $casa['_id'];
 
-            if (! $existe) {
-                DB::table('casa_iglesia')->insert([
-                    ...$casa,
-                    'estado' => true,
-                    'id_lider_responsable' => null,
-                ]);
-            }
-        }
+                    unset($casa['_id']);
+
+                    $coleccion->updateOne(
+                        ['_id' => $id],
+                        ['$setOnInsert' => $casa],
+                        ['upsert' => true]
+                    );
+                }
+            });
     }
 }

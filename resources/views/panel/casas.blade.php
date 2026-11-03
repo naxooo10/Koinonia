@@ -1,45 +1,21 @@
-<!doctype html>
-<html lang="es">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Casas Iglesia | Koinonía</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 1000px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
+@extends('layouts.koinonia')
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
+@section('titulo', 'Casas Iglesias')
+@section('icono', 'home')
+@section('tipo', 'listado-ui')
+@section('descripcion', 'Acompaña y organiza los lugares donde crece tu comunidad.')
 
-        th, td {
-            padding: 12px;
-            border: 1px solid #ddd;
-            text-align: left;
-        }
+@section('encabezado')
+Casas Iglesia
+@endsection
 
-        th {
-            background: #f3f3f3;
-        }
-
-        .error {
-            color: #b00020;
-        }
-    </style>
-</head>
-<body>
-    <h1>Casas Iglesia</h1>
-
-    <p><a href="/casas/crear">+ Crear casa</a></p>
+@section('contenido')
+<nav class="ui-herramientas"><a class="ui-primario" href="/casas/crear">+ Crear casa</a></nav>
     <p id="mensaje">Cargando casas...</p>
 
-    <table>
+    <div class="ui-listado-busqueda"><svg class="icono" aria-hidden="true"><use href="#i-search"/></svg><label class="solo-lectores" for="ui-buscar-listado">Filtrar el listado cargado</label><input id="ui-buscar-listado" data-ui-buscar type="search" placeholder="Buscar en este listado…" autocomplete="off" aria-describedby="ui-estado-listado"></div><p class="ui-listado-contador" id="ui-estado-listado" role="status" aria-live="polite"></p>
+<div class="tabla-ui">
+<table>
         <thead>
             <tr>
                 <th>Nombre</th>
@@ -50,8 +26,11 @@
         </thead>
         <tbody id="filas"></tbody>
     </table>
+</div>
+@endsection
 
-    <script>
+@push('scripts')
+<script>
         async function cargarCasas() {
             const mensaje = document.getElementById('mensaje');
             const filas = document.getElementById('filas');
@@ -101,5 +80,4 @@
 
         cargarCasas();
     </script>
-</body>
-</html>
+@endpush

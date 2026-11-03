@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Carbon\Carbon;
+use DateTimeImmutable;
+use DateTimeZone;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use MongoDB\BSON\UTCDateTime;
+use MongoDB\Collection;
 
 class InformeReunionController extends Controller
 {
@@ -25,76 +28,229 @@ class InformeReunionController extends Controller
             'min' => 'El campo :attribute debe ser como mínimo :min.',
         ], [
             'mes' => 'mes',
-            'anio' => 'anio',
+            'anio' => 'año',
             'id_lider' => 'identificador del líder',
-            'id_casa' => 'identificador de la casa',
+            'id_casa' => 'identificador de la Casa',
             'id_participante' => 'identificador del participante',
             'cantidad_asistentes' => 'número de asistentes',
         ]);
 
-        $inicio = Carbon::create(
-            (int) $filtros['anio'],
-            (int) $filtros['mes'],
-            1
+        $inicio = new DateTimeImmutable(
+            sprintf(
+                '%04d-%02d-01 00:00:00',
+                (int) $filtros['anio'],
+                (int) $filtros['mes']
+            ),
+            new DateTimeZone('UTC')
         );
 
-        $fin = $inicio->copy()->addMonth();
+        $fin = $inicio->modify('+1 month');
 
-        $consulta = DB::table('reunion as r')
-            ->join('casa_iglesia as c', 'c.id_casa', '=', 'r.id_casa')
-            ->leftJoin(
-                'usuario as l',
-                'l.id_usuario',
-                '=',
-                'c.id_lider_responsable'
-            )
-            ->select(
-                'r.id_reunion',
-                'r.fecha',
-                'r.tema',
-                'c.nombre_casa',
-                'l.nombre as nombre_lider'
-            )
-            ->selectSub(function ($subconsulta) {
-                $subconsulta->from('asistencia as a')
-                    ->selectRaw('COUNT(*)')
-                    ->whereColumn('a.id_reunion', 'r.id_reunion');
-            }, 'cantidad_asistentes')
-            ->where('r.fecha', '>=', $inicio->toDateString())
-            ->where('r.fecha', '<', $fin->toDateString());
-
-        if ($request->filled('id_lider')) {
-            $consulta->where(
-                'c.id_lider_responsable',
-                $filtros['id_lider']
-            );
-        }
+        $condiciones = [
+            'fecha' => [
+                '$gte' => new UTCDateTime($inicio),
+                '$lt' => new UTCDateTime($fin),
+            ],
+        ];
 
         if ($request->filled('id_casa')) {
-            $consulta->where('r.id_casa', $filtros['id_casa']);
+            $condiciones['id_casa'] = (int) $filtros['id_casa'];
         }
 
         if ($request->filled('id_participante')) {
-            $consulta->whereExists(function ($subconsulta) use ($filtros) {
-                $subconsulta->selectRaw('1')
-                    ->from('asistencia as ap')
-                    ->whereColumn('ap.id_reunion', 'r.id_reunion')
-                    ->where('ap.id_usuario', $filtros['id_participante']);
-            });
+            $condiciones['asistencia.usuario_id'] =
+                (int) $filtros['id_participante'];
         }
+
+        $etapas = [
+            [
+                '$match' => $condiciones,
+            ],
+            [
+                '$lookup' => [
+                    'from' => 'casas_iglesia',
+                    'localField' => 'id_casa',
+                    'foreignField' => '_id',
+                    'as' => 'casa',
+                ],
+            ],
+            [
+                '$unwind' => [
+                    'path' => '$casa',
+                    'preserveNullAndEmptyArrays' => true,
+                ],
+            ],
+        ];
+
+        if ($request->filled('id_lider')) {
+            $etapas[] = [
+                '$match' => [
+                    'casa.id_lider_responsable' =>
+                        (int) $filtros['id_lider'],
+                ],
+            ];
+        }
+
+        $conteos = [];
+
+        foreach ([
+            'cantidad_asistentes' => 'presente',
+            'cantidad_ausentes' => 'ausente',
+            'cantidad_pendientes' => 'pendiente',
+        ] as $campo => $estado) {
+            $conteos[$campo] = [
+                '$size' => [
+                    '$filter' => [
+                        'input' => [
+                            '$ifNull' => ['$asistencia', []],
+                        ],
+                        'as' => 'registro',
+                        'cond' => [
+                            '$eq' => ['$$registro.estado', $estado],
+                        ],
+                    ],
+                ],
+            ];
+        }
+
+        $etapas[] = [
+            '$set' => $conteos,
+        ];
 
         if ($request->filled('cantidad_asistentes')) {
-            $consulta->whereRaw(
-                '(SELECT COUNT(*) FROM asistencia AS ac
-                  WHERE ac.id_reunion = r.id_reunion) = ?',
-                [(int) $filtros['cantidad_asistentes']]
-            );
+            $etapas[] = [
+                '$match' => [
+                    'cantidad_asistentes' =>
+                        (int) $filtros['cantidad_asistentes'],
+                ],
+            ];
         }
 
-        return response()->json(
-            $consulta->orderBy('r.fecha')
-                ->orderBy('r.id_reunion')
-                ->get()
-        );
+        $etapas[] = [
+            '$lookup' => [
+                'from' => 'usuarios',
+                'localField' => 'casa.id_lider_responsable',
+                'foreignField' => '_id',
+                'pipeline' => [
+                    [
+                        '$project' => [
+                            '_id' => 1,
+                            'nombre' => 1,
+                        ],
+                    ],
+                ],
+                'as' => 'lider',
+            ],
+        ];
+
+        $etapas[] = [
+            '$lookup' => [
+                'from' => 'usuarios',
+                'localField' => 'asistencia.usuario_id',
+                'foreignField' => '_id',
+                'pipeline' => [
+                    [
+                        '$project' => [
+                            '_id' => 1,
+                            'nombre' => 1,
+                        ],
+                    ],
+                ],
+                'as' => 'personas',
+            ],
+        ];
+
+        $etapas[] = [
+            '$sort' => [
+                'fecha' => 1,
+                '_id' => 1,
+            ],
+        ];
+
+        $etapas[] = [
+            '$project' => [
+                '_id' => 0,
+                'id_reunion' => '$_id',
+                'fecha' => [
+                    '$dateToString' => [
+                        'format' => '%Y-%m-%d',
+                        'date' => '$fecha',
+                        'timezone' => 'UTC',
+                    ],
+                ],
+                'tema' => 1,
+                'id_casa' => 1,
+                'nombre_casa' => [
+                    '$ifNull' => [
+                        '$casa.nombre_casa',
+                        'Casa no disponible',
+                    ],
+                ],
+                'id_lider' => [
+                    '$ifNull' => [
+                        '$casa.id_lider_responsable',
+                        null,
+                    ],
+                ],
+                'nombre_lider' => [
+                    '$ifNull' => [
+                        [
+                            '$arrayElemAt' => ['$lider.nombre', 0],
+                        ],
+                        'Sin líder asignado',
+                    ],
+                ],
+                'cantidad_asistentes' => 1,
+                'cantidad_ausentes' => 1,
+                'cantidad_pendientes' => 1,
+                'asistencia' => [
+                    '$ifNull' => ['$asistencia', []],
+                ],
+                'personas' => 1,
+            ],
+        ];
+
+        $resultados = DB::connection('mongodb')
+            ->table('reuniones')
+            ->raw(function (Collection $coleccion) use ($etapas) {
+                return $coleccion->aggregate($etapas, [
+                    'typeMap' => [
+                        'root' => 'array',
+                        'document' => 'array',
+                        'array' => 'array',
+                    ],
+                ])->toArray();
+            });
+
+        $reuniones = collect($resultados)
+            ->map(function (array $reunion) {
+                $personas = collect($reunion['personas'])
+                    ->keyBy('_id');
+
+                $reunion['asistencia'] = collect($reunion['asistencia'])
+                    ->map(function (array $registro) use ($personas) {
+                        $persona = $personas->get(
+                            $registro['usuario_id']
+                        );
+
+                        return [
+                            'usuario_id' => $registro['usuario_id'],
+                            'nombre' =>
+                                $persona['nombre'] ?? 'Usuario no disponible',
+                            'estado' => $registro['estado'],
+                            'justificacion' =>
+                                $registro['justificacion'] ?? null,
+                        ];
+                    })
+                    ->values()
+                    ->all();
+
+                unset($reunion['personas']);
+
+                return $reunion;
+            })
+            ->values();
+
+        return response()->json($reuniones);
     }
 }

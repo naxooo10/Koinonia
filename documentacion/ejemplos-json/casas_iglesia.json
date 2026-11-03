@@ -1,7 +1,16 @@
-{
-  "_id": 1,
-  "nombre_casa": "Casa Iglesia Quilpue",
-  "direccion": "Los Aromos 123, Quilpue, Chile",
-  "estado": true,
-  "id_lider_responsable": 2
-}
+[
+  {
+    "_id": 1,
+    "nombre_casa": "Casa Iglesia Quilpue",
+    "direccion": "Los Aromos 123, Quilpue, Chile",
+    "estado": true,
+    "id_lider_responsable": 2
+  },
+  {
+    "_id": 4,
+    "nombre_casa": "Casa Iglesia Viña del Mar",
+    "direccion": "Av. Libertad 450, Viña del Mar, Chile",
+    "estado": true,
+    "id_lider_responsable": 2
+  }
+]

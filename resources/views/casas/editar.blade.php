@@ -1,19 +1,22 @@
-<!doctype html>
-<html lang="es">
-<head>
-    <meta charset="utf-8">
-    <title>Editar Casa Iglesia | Koinonía</title>
-</head>
-<body>
-    <h1>Editar {{ $casa->nombre_casa }}</h1>
+@extends('layouts.koinonia')
 
-    <p>
+@section('titulo', 'Editar Casa Iglesia')
+@section('icono', 'home')
+@section('tipo', 'formulario-ui')
+@section('descripcion', 'Actualiza la información y el liderazgo de esta comunidad.')
+
+@section('encabezado')
+Editar {{ $casa->nombre_casa }}
+@endsection
+
+@section('contenido')
+<p>
         Estado actual:
         <strong>{{ $casa->estado ? 'Activa' : 'Inactiva' }}</strong>
     </p>
 
     @if ($errors->any())
-        <ul>
+        <ul class="errores" role="alert">
             @foreach ($errors->all() as $error)
                 <li>{{ $error }}</li>
             @endforeach
@@ -71,7 +74,7 @@
     <hr>
 
     @if ($casa->estado)
-        <form method="POST"
+        <form data-ui-peligro method="POST"
               action="/casas/{{ $casa->id_casa }}/desactivar">
             @csrf
             @method('PATCH')
@@ -79,7 +82,7 @@
             <button type="submit">Desactivar casa</button>
         </form>
     @else
-        <form method="POST"
+        <form data-ui-activar method="POST"
               action="/casas/{{ $casa->id_casa }}/activar">
             @csrf
             @method('PATCH')
@@ -91,5 +94,4 @@
     <p>
         <a href="/panel/casas">Volver al listado de Casas</a>
     </p>
-</body>
-</html>
+@endsection
