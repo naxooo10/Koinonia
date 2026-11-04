@@ -123,4 +123,17 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Contraseña de las cuentas iniciales
+    |--------------------------------------------------------------------------
+    |
+    | Clave que UsuarioSeeder asigna a las cuentas iniciales. Se lee aquí (y
+    | no con env() en el seeder) para que funcione con la configuración
+    | cacheada. En producción es obligatoria; en local se usa "password".
+    |
+    */
+
+    'seed_password' => env('SEED_PASSWORD'),
+
 ];
