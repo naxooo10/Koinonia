@@ -12,14 +12,26 @@ use MongoDB\Collection;
  * en una instalación nueva. Solo un Administrador puede crear usuarios
  * desde la aplicación, por lo que al menos uno debe existir de antemano.
  *
- * La contraseña se toma de SEED_PASSWORD (por defecto "password").
+ * La contraseña se toma de SEED_PASSWORD. En local, si no está definida,
+ * se usa "password". En producción no se crean cuentas sin ella, para no
+ * dejar un administrador con una clave conocida en la app publicada.
  * Si el correo ya existe, el usuario no se modifica.
  */
 class UsuarioSeeder extends Seeder
 {
     public function run(): void
     {
-        $clave = Hash::make(env('SEED_PASSWORD', 'password'));
+        $claveConfigurada = config('app.seed_password');
+
+        if (blank($claveConfigurada) && app()->environment('production')) {
+            $this->command?->warn(
+                'UsuarioSeeder omitido: define SEED_PASSWORD para crear las cuentas iniciales en producción.'
+            );
+
+            return;
+        }
+
+        $clave = Hash::make($claveConfigurada ?: 'password');
 
         $usuarios = [
             [
