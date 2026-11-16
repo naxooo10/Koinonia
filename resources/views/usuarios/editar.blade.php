@@ -70,7 +70,8 @@ Editar usuario
                 <p id="ayuda-password" class="ayuda">
                     Déjala en blanco para conservar la actual. Si la
                     cambias, debe tener al menos 8 caracteres e incluir
-                    una letra y un número.
+                    una letra y un número, y se cerrarán las sesiones
+                    que esta persona tenga abiertas.
                 </p>
                 <input
                     id="password"

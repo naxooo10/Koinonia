@@ -90,6 +90,11 @@ Mi perfil
             <fieldset>
                 <legend>Cambiar contraseña</legend>
 
+                <p class="ayuda">
+                    Al cambiarla se cerrarán tus sesiones abiertas en otros
+                    dispositivos. En este seguirás conectado.
+                </p>
+
                 <div class="campo">
                     <label for="password_actual">Contraseña actual *</label>
                     <input
