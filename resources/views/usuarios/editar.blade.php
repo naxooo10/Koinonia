@@ -16,7 +16,7 @@ Editar usuario
 
         <p class="estado">
             Estado:
-            <strong>{{ $usuario->estado ? 'Activo' : 'Inactivo' }}</strong>
+            <strong>{{ $usuario->estado ? 'Activo' : ($usuario->pendiente ? 'Pendiente de aprobación' : 'Inactivo') }}</strong>
         </p>
 
         @if ($errors->any())
@@ -62,6 +62,24 @@ Editar usuario
                     maxlength="100"
                     value="{{ old('email', $usuario->email) }}"
                     required
+                >
+            </div>
+
+            <div class="campo">
+                <label for="password">Nueva contraseña (opcional)</label>
+                <p id="ayuda-password" class="ayuda">
+                    Déjala en blanco para conservar la actual. Si la
+                    cambias, debe tener al menos 8 caracteres e incluir
+                    una letra y un número.
+                </p>
+                <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    minlength="8"
+                    maxlength="200"
+                    autocomplete="new-password"
+                    aria-describedby="ayuda-password"
                 >
             </div>
 
@@ -143,6 +161,26 @@ Editar usuario
 
                     <button type="submit" class="boton-desactivar">
                         Desactivar usuario
+                    </button>
+                </form>
+            @elseif ($usuario->pendiente)
+                <h2>Aprobar cuenta</h2>
+
+                <p class="ayuda">
+                    Esta persona creó su cuenta desde el registro público.
+                    Revisa su rol y sus Casas, guarda los cambios y luego
+                    apruébala para que pueda iniciar sesión.
+                </p>
+
+                <form data-ui-activar
+                    method="POST"
+                    action="/usuarios/{{ $usuario->id_usuario }}/activar"
+                >
+                    @csrf
+                    @method('PATCH')
+
+                    <button type="submit" class="boton-activar">
+                        Aprobar cuenta
                     </button>
                 </form>
             @else

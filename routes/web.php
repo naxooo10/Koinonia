@@ -8,6 +8,8 @@ use App\Http\Controllers\EventoController;
 use App\Http\Controllers\InformeReunionController;
 use App\Http\Controllers\MaterialEstudioController;
 use App\Http\Controllers\PanelController;
+use App\Http\Controllers\PerfilController;
+use App\Http\Controllers\RegistroController;
 use App\Http\Controllers\ReunionController;
 use App\Http\Controllers\RolController;
 use App\Http\Controllers\UsuarioController;
@@ -22,9 +24,7 @@ Route::get('/salud', function () {
         ->first();
 
     return response()->json([
-        'aplicacion' => 'Koinonía',
-        'motor' => 'MongoDB',
-        'base_de_datos' => 'conectada',
+        'estado' => 'disponible',
     ]);
 });
 
@@ -33,6 +33,12 @@ Route::middleware('guest')->group(function () {
         ->name('login');
 
     Route::post('/login', [AuthController::class, 'login'])
+        ->middleware('throttle:5,1');
+
+    Route::get('/registro', [RegistroController::class, 'show'])
+        ->name('registro');
+
+    Route::post('/registro', [RegistroController::class, 'store'])
         ->middleware('throttle:5,1');
 });
 
@@ -51,6 +57,21 @@ Route::middleware('auth')->group(function () {
                 EventoController::class,
                 'index',
             ]);
+
+            Route::get('/perfil', [
+                PerfilController::class,
+                'show',
+            ])->name('perfil');
+
+            Route::patch('/perfil', [
+                PerfilController::class,
+                'update',
+            ]);
+
+            Route::patch('/perfil/contrasena', [
+                PerfilController::class,
+                'updatePassword',
+            ])->middleware('throttle:5,1');
         });
 
     Route::middleware('rol:Administrador,Líder')->group(function () {

@@ -46,8 +46,13 @@ Los formularios Blade incorporan `@csrf`. Para formularios HTML que representan 
 | GET | `/` | Público | Sin cuerpo | `302` hacia `/login` |
 | GET | `/login` | Invitado | Sin cuerpo | `200` HTML; un usuario autenticado es redirigido por `guest` |
 | POST | `/login` | Invitado | `email`, `password`, CSRF | `302` hacia la URL protegida pendiente o `/panel` |
+| GET | `/registro` | Invitado | Sin cuerpo | `200` HTML con el formulario de creación de cuenta |
+| POST | `/registro` | Invitado | `nombre`, `email`, `password`, `password_confirmation`, CSRF | `302` hacia `/login`; crea la cuenta inactiva y pendiente de aprobación (`pendiente_aprobacion: true`), con rol Participante y sin Casas; no inicia sesión; el administrador la aprueba con `PATCH /usuarios/{id}/activar`; limitado a 5 solicitudes por minuto |
 | POST | `/logout` | Autenticado | CSRF | `302` hacia `/login`; invalida la sesión |
-| GET | `/salud` | Público | Sin cuerpo | `200` JSON si la consulta a MongoDB no falla |
+| GET | `/perfil` | Autenticado (A, L, P) | Sin cuerpo | `200` HTML con los datos propios |
+| PATCH | `/perfil` | Autenticado (A, L, P) | `nombre`, `email`, CSRF | `302` hacia `/perfil`; solo modifica nombre y correo de la cuenta en sesión |
+| PATCH | `/perfil/contrasena` | Autenticado (A, L, P) | `password_actual`, `password`, `password_confirmation`, CSRF | `302` hacia `/perfil`; limitado a 5 solicitudes por minuto |
+| GET | `/salud` | Público | Sin cuerpo | `200` JSON `{"estado":"disponible"}` si la consulta a la base no falla |
 | GET | `/up` | Público | Sin cuerpo | Comprobación de salud de Laravel; no sustituye la consulta MongoDB de `/salud` |
 
 El correo del login debe tener formato válido y la contraseña debe estar presente. Las credenciales incorrectas o una cuenta inactiva producen un error de validación; con `Accept: application/json`, el estado es `422` y el error aparece en `errors.email`. No se devuelve `401` por contraseña incorrecta en esta implementación.
@@ -121,7 +126,7 @@ La lista devuelve `id_casa`, `nombre_casa`, `direccion`, `estado` e `id_lider_re
 | --- | --- | --- |
 | `nombre` | Obligatorio, texto, máximo 100 | Obligatorio, mismas reglas |
 | `email` | Obligatorio, correo válido, máximo 100, no registrado | Obligatorio, único excluyendo al usuario editado |
-| `password` | Obligatorio, texto, mínimo 8 | No se modifica por este endpoint |
+| `password` | Obligatorio, 8 a 200 caracteres, con al menos una letra y un número | Opcional; vacío conserva la actual, con valor la restablece bajo las mismas reglas |
 | `id_rol` | Obligatorio, entero positivo de un rol existente | Opcional; si aparece debe ser un rol existente |
 | `casas_ids` | Arreglo de ID positivos distintos; si se omite se usa `[]` | Opcional; `[]` elimina las pertenencias |
 | `actualizar_casas` | No requerido | Con valor verdadero, la ausencia de `casas_ids` se interpreta como `[]` |

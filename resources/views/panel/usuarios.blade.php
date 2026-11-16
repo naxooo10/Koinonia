@@ -50,6 +50,10 @@ Usuarios
                 const usuarios = await respuesta.json();
                 filas.replaceChildren();
 
+                // Las cuentas por aprobar se muestran primero.
+                usuarios.sort((a, b) => Number(b.pendiente) - Number(a.pendiente));
+                const pendientes = usuarios.filter((usuario) => usuario.pendiente).length;
+
                 for (const usuario of usuarios) {
                     const fila = document.createElement('tr');
 
@@ -58,7 +62,9 @@ Usuarios
                         usuario.email,
                         usuario.nombre_rol,
                         usuario.nombre_casa ?? 'Sin casa asignada',
-                        usuario.estado ? 'Activo' : 'Inactivo'
+                        usuario.estado
+                            ? 'Activo'
+                            : (usuario.pendiente ? 'Pendiente de aprobación' : 'Inactivo')
                     ]) {
                         const celda = document.createElement('td');
                         celda.textContent = valor;
@@ -68,7 +74,7 @@ Usuarios
                     const celdaAccion = document.createElement('td');
                     const enlace = document.createElement('a');
                     enlace.href = `/usuarios/${usuario.id_usuario}/editar`;
-                    enlace.textContent = 'Editar';
+                    enlace.textContent = usuario.pendiente ? 'Revisar y aprobar' : 'Editar';
 
                     celdaAccion.appendChild(enlace);
                     fila.appendChild(celdaAccion);
@@ -77,6 +83,7 @@ Usuarios
 
                 mensaje.textContent = usuarios.length
                     ? `${usuarios.length} usuario(s) encontrado(s).`
+                        + (pendientes ? ` ${pendientes} cuenta(s) pendiente(s) de aprobación.` : '')
                     : 'No hay usuarios registrados.';
             } catch (error) {
                 mensaje.textContent = error.message;

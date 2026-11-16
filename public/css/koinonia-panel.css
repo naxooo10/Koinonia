@@ -356,3 +356,30 @@ main { padding: 20px 26px 0; max-width: 2000px; margin: auto; }
     outline: 2px solid #dc2626;
     outline-offset: 3px;
 }
+
+/* Enlace "Mi perfil" del menú de cuenta */
+.perfil-menu .perfil-enlace {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    background: #f0f6fd;
+    color: #2c629d;
+    border-radius: 8px;
+    font-size: 14px;
+    text-decoration: none;
+    transition: background-color .18s, color .18s;
+}
+
+.perfil-menu .perfil-enlace:hover,
+.perfil-menu .perfil-enlace:focus-visible,
+.perfil-menu .perfil-enlace[aria-current="page"] {
+    background: #dcebfb;
+    color: #1d4f86;
+}
+
+.perfil-menu .perfil-enlace:focus-visible {
+    outline: 2px solid #2c629d;
+    outline-offset: 2px;
+}

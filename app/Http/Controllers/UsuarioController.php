@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\ReglasContrasena;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -51,6 +52,8 @@ class UsuarioController extends Controller
                     'nombre' => $usuario->nombre,
                     'email' => $usuario->email,
                     'estado' => (bool) $usuario->estado,
+                    'pendiente' => ! $usuario->estado
+                        && ! empty($usuario->pendiente_aprobacion),
                     'id_rol' => (int) $usuario->id_rol,
                     'nombre_rol' => $roles->get($usuario->id_rol)
                         ->nombre_rol ?? 'Sin rol',
@@ -93,7 +96,10 @@ class UsuarioController extends Controller
         $datos = $request->validate([
             'nombre' => ['required', 'string', 'max:100'],
             'email' => ['required', 'email', 'max:100'],
-            'password' => ['required', 'string', 'min:8'],
+            'password' => array_merge(
+                ['required'],
+                ReglasContrasena::reglas()
+            ),
             'id_rol' => ['required', 'integer', 'min:1'],
             'casas_ids' => ['present', 'array'],
             'casas_ids.*' => [
@@ -102,7 +108,7 @@ class UsuarioController extends Controller
                 'min:1',
                 'distinct',
             ],
-        ]);
+        ], ReglasContrasena::mensajes());
 
         $idRol = (int) $datos['id_rol'];
         $idsCasas = array_map('intval', $datos['casas_ids']);
@@ -137,6 +143,9 @@ class UsuarioController extends Controller
         );
 
         unset($usuario->password);
+
+        $usuario->pendiente = ! $usuario->estado
+            && ! empty($usuario->pendiente_aprobacion);
 
         $roles = $this->obtenerRoles();
 
@@ -173,6 +182,10 @@ class UsuarioController extends Controller
         $datos = $request->validate([
             'nombre' => ['required', 'string', 'max:100'],
             'email' => ['required', 'email', 'max:100'],
+            'password' => array_merge(
+                ['nullable'],
+                ReglasContrasena::reglas()
+            ),
             'id_rol' => [
                 'sometimes',
                 'required',
@@ -186,7 +199,7 @@ class UsuarioController extends Controller
                 'min:1',
                 'distinct',
             ],
-        ]);
+        ], ReglasContrasena::mensajes());
 
         $this->validarCorreo($datos['email'], $id);
 
@@ -194,6 +207,12 @@ class UsuarioController extends Controller
             'nombre' => $datos['nombre'],
             'email' => $datos['email'],
         ];
+
+        // El administrador puede restablecer la contraseña de una
+        // persona que la olvidó; si el campo llega vacío se conserva.
+        if (! empty($datos['password'])) {
+            $cambios['password'] = Hash::make($datos['password']);
+        }
 
         if (array_key_exists('id_rol', $datos)) {
             $idRol = (int) $datos['id_rol'];
@@ -291,7 +310,10 @@ class UsuarioController extends Controller
         DB::connection('mongodb')
             ->table('usuarios')
             ->where('_id', $id)
-            ->update(['estado' => true]);
+            ->update([
+                'estado' => true,
+                'pendiente_aprobacion' => false,
+            ]);
 
         return redirect('/panel/usuarios');
     }

@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Panel | Koinonía</title>
-    <link rel="stylesheet" href="{{ asset('css/koinonia-panel.css') }}?v=3">
+    <link rel="stylesheet" href="{{ asset('css/koinonia-panel.css') }}?v=4">
 </head>
 <body>
     <svg class="iconos-definiciones" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -76,6 +76,7 @@
                 </summary>
                 <div class="perfil-menu">
                     <p>Sesión iniciada como<strong>{{ $usuario->nombre }}</strong></p>
+                    <a class="perfil-enlace" href="/perfil"><svg class="icono"><use href="#i-users"/></svg>Mi perfil</a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit"><svg class="icono"><use href="#i-logout"/></svg>Cerrar sesión</button>

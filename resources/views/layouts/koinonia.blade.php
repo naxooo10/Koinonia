@@ -16,6 +16,7 @@
         request()->is('materiales', 'materiales/*') => 'materiales',
         request()->is('panel/consultas', 'etapa1/consultas/*') => 'consultas',
         request()->is('etapa1/sql', 'etapa1/sql/*') => 'ejercicios',
+        request()->is('perfil', 'perfil/*') => 'perfil',
         default => 'panel',
     };
     $enlacesDeNavegacion = [
@@ -51,8 +52,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('titulo', 'Koinonía') | Koinonía</title>
-    <link rel="stylesheet" href="{{ asset('css/koinonia-panel.css') }}?v=3">
-    <link rel="stylesheet" href="{{ asset('css/koinonia-interior.css') }}?v=1">
+    <link rel="stylesheet" href="{{ asset('css/koinonia-panel.css') }}?v=4">
+    <link rel="stylesheet" href="{{ asset('css/koinonia-interior.css') }}?v=2">
     <script src="{{ asset('js/koinonia-interior.js') }}?v=1" defer></script>
     @stack('estilos')
 </head>
@@ -80,7 +81,7 @@
             <nav class="migas" aria-label="Ubicación"><a href="/panel">Panel principal</a><span aria-hidden="true">/</span><strong>@yield('titulo', 'Comunidad')</strong></nav>
             <details class="perfil">
                 <summary><span class="avatar">{{ $inicialesDeCuenta }}</span><span class="perfil-nombre">{{ $nombreDeCuenta }}<small>{{ $rolDeNavegacion }}</small></span><svg class="icono desplegar"><use href="#i-chevron"/></svg></summary>
-                <div class="perfil-menu"><p>Sesión iniciada como<strong>{{ $nombreDeCuenta }}</strong></p><form method="POST" action="{{ route('logout') }}">@csrf<button type="submit"><svg class="icono"><use href="#i-logout"/></svg>Cerrar sesión</button></form></div>
+                <div class="perfil-menu"><p>Sesión iniciada como<strong>{{ $nombreDeCuenta }}</strong></p><a class="perfil-enlace" href="/perfil" @if ($seccionDeRuta === 'perfil') aria-current="page" @endif><svg class="icono"><use href="#i-users"/></svg>Mi perfil</a><form method="POST" action="{{ route('logout') }}">@csrf<button type="submit"><svg class="icono"><use href="#i-logout"/></svg>Cerrar sesión</button></form></div>
             </details>
         </header>
 
