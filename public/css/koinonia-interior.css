@@ -216,3 +216,10 @@
 .pagina-contenido .ejercicios-lista { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; list-style: none; padding: 0; margin: 23px 0; }
 .pagina-contenido .ejercicios-lista li { display: flex; gap: 11px; align-items: center; padding: 16px 18px; border: 1px solid #e0ebf7; border-radius: 11px; background: #fff; color: #69829c; font-size: 12px; }
 .pagina-contenido .ejercicios-lista li::before { content: '✓'; display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; flex-shrink: 0; border-radius: 8px; color: #3386d8; background: #eaf5ff; font-weight: 700; }
+
+/* Registro y enlace entre inicio de sesión y creación de cuenta */
+.login-form-card .login-alterno { margin-top: 20px; text-align: center; font-size: 13px; color: #6b7f94; }
+.login-form-card .login-alterno a { color: #0877f9; font-weight: 600; text-decoration: none; }
+.login-form-card .login-alterno a:hover,
+.login-form-card .login-alterno a:focus-visible { text-decoration: underline; }
+.login-form-card .login-ayuda { display: block; margin-top: 7px; font-size: 12px; line-height: 1.5; color: #8496a9; }

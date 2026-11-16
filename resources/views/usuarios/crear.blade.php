@@ -53,13 +53,15 @@ Nuevo usuario
             <div class="campo">
                 <label for="password">Contraseña *</label>
                 <p id="ayuda-password" class="ayuda">
-                    Debe tener al menos 8 caracteres.
+                    Debe tener al menos 8 caracteres e incluir una letra
+                    y un número. La persona podrá cambiarla desde su perfil.
                 </p>
                 <input
                     id="password"
                     name="password"
                     type="password"
                     minlength="8"
+                    maxlength="200"
                     autocomplete="new-password"
                     aria-describedby="ayuda-password"
                     required

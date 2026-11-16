@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\CabecerasSeguridad;
 use App\Http\Middleware\NotificacionesWeb;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -15,11 +16,13 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'acceso.demo' => \App\Http\Middleware\AccesoDemo::class,
             'rol' => \App\Http\Middleware\VerificarRol::class,
         ]);
 
-        $middleware->web(append: [NotificacionesWeb::class]);
+        $middleware->web(append: [
+            CabecerasSeguridad::class,
+            NotificacionesWeb::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

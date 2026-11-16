@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Iniciar sesión | Koinonía</title>
-    <link rel="stylesheet" href="{{ asset('css/koinonia-panel.css') }}?v=3">
-    <link rel="stylesheet" href="{{ asset('css/koinonia-interior.css') }}?v=1">
+    <link rel="stylesheet" href="{{ asset('css/koinonia-panel.css') }}?v=4">
+    <link rel="stylesheet" href="{{ asset('css/koinonia-interior.css') }}?v=2">
     <script src="{{ asset('js/koinonia-interior.js') }}?v=1" defer></script>
 </head>
 <body class="login-pagina">
@@ -66,6 +66,7 @@
 
             <button type="submit">Iniciar sesión</button>
         </form>
+            <p class="login-alterno">¿No tienes cuenta? <a href="/registro">Crea una</a></p>
             <div class="login-nota"><svg class="icono" aria-hidden="true"><use href="#i-users"/></svg><span>Personas, Casas y propósito.</span></div>
         </section>
     </main>
