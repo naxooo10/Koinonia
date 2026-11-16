@@ -125,16 +125,29 @@ class PerfilController extends Controller
             )
         );
 
+        $nuevoHash = Hash::make($datos['password']);
+
         DB::connection('mongodb')
             ->table('usuarios')
             ->where('_id', $id)
             ->update([
-                'password' => Hash::make($datos['password']),
+                'password' => $nuevoHash,
             ]);
+
+        // La contraseña se guardó con una consulta directa, así que el
+        // usuario en memoria aún tiene el hash anterior. Se sincroniza
+        // para que AuthenticateSession registre el hash nuevo en esta
+        // sesión: este dispositivo sigue dentro y los demás se cierran
+        // en su siguiente petición.
+        $usuario = $request->user();
+        $usuario->setRawAttributes(array_merge(
+            $usuario->getAttributes(),
+            ['password' => $nuevoHash]
+        ));
 
         $request->session()->regenerate();
 
         return redirect('/perfil')
-            ->with('exito', 'Tu contraseña se cambió correctamente.');
+            ->with('exito', 'Tu contraseña se cambió correctamente. Las sesiones abiertas en otros dispositivos se cerraron.');
     }
 }

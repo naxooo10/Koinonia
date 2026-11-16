@@ -51,7 +51,7 @@ Los formularios Blade incorporan `@csrf`. Para formularios HTML que representan 
 | POST | `/logout` | Autenticado | CSRF | `302` hacia `/login`; invalida la sesión |
 | GET | `/perfil` | Autenticado (A, L, P) | Sin cuerpo | `200` HTML con los datos propios |
 | PATCH | `/perfil` | Autenticado (A, L, P) | `nombre`, `email`, CSRF | `302` hacia `/perfil`; solo modifica nombre y correo de la cuenta en sesión |
-| PATCH | `/perfil/contrasena` | Autenticado (A, L, P) | `password_actual`, `password`, `password_confirmation`, CSRF | `302` hacia `/perfil`; limitado a 5 solicitudes por minuto |
+| PATCH | `/perfil/contrasena` | Autenticado (A, L, P) | `password_actual`, `password`, `password_confirmation`, CSRF | `302` hacia `/perfil`; limitado a 5 solicitudes por minuto; cierra las demás sesiones de la cuenta en su siguiente petición |
 | GET | `/salud` | Público | Sin cuerpo | `200` JSON `{"estado":"disponible"}` si la consulta a la base no falla |
 | GET | `/up` | Público | Sin cuerpo | Comprobación de salud de Laravel; no sustituye la consulta MongoDB de `/salud` |
 

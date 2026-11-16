@@ -212,6 +212,22 @@ class UsuarioController extends Controller
         // persona que la olvidó; si el campo llega vacío se conserva.
         if (! empty($datos['password'])) {
             $cambios['password'] = Hash::make($datos['password']);
+
+            // Al restablecer una contraseña, las sesiones abiertas de esa
+            // persona se cierran (AuthenticateSession). Si el administrador
+            // cambia la suya desde aquí, se sincroniza el usuario en memoria
+            // para que conserve la sesión actual.
+            $sesion = $request->user();
+
+            if (
+                $sesion !== null
+                && (int) $sesion->getAuthIdentifier() === $id
+            ) {
+                $sesion->setRawAttributes(array_merge(
+                    $sesion->getAttributes(),
+                    ['password' => $cambios['password']]
+                ));
+            }
         }
 
         if (array_key_exists('id_rol', $datos)) {

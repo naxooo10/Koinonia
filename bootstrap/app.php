@@ -6,6 +6,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Session\Middleware\AuthenticateSession;
 use Symfony\Component\HttpFoundation\Response;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -19,9 +20,14 @@ return Application::configure(basePath: dirname(__DIR__))
             'rol' => \App\Http\Middleware\VerificarRol::class,
         ]);
 
+        // AuthenticateSession guarda en cada sesión una huella de la
+        // contraseña y la compara en cada petición: al cambiar la
+        // contraseña, las sesiones abiertas en otros dispositivos
+        // dejan de coincidir y se cierran.
         $middleware->web(append: [
             CabecerasSeguridad::class,
             NotificacionesWeb::class,
+            AuthenticateSession::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
