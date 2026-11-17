@@ -155,6 +155,9 @@ class ReunionController extends Controller
                 '_id' => $idReunion,
                 'fecha' => $this->crearFecha($datos['fecha']),
                 'tema' => $datos['tema'],
+                'descripcion' => $this->normalizarDescripcion(
+                    $datos['descripcion'] ?? null
+                ),
                 'id_casa' => $idCasa,
                 'asistencia' => $asistencia,
             ]);
@@ -269,6 +272,9 @@ class ReunionController extends Controller
             ->update([
                 'fecha' => $this->crearFecha($datos['fecha']),
                 'tema' => $datos['tema'],
+                'descripcion' => $this->normalizarDescripcion(
+                    $datos['descripcion'] ?? null
+                ),
                 'asistencia' => $asistencia,
             ]);
 
@@ -323,6 +329,7 @@ class ReunionController extends Controller
         return [
             'fecha' => ['required', 'date_format:Y-m-d'],
             'tema' => ['required', 'string', 'max:150'],
+            'descripcion' => ['nullable', 'string', 'max:3000'],
             'asistencia' => ['present', 'array', 'list'],
             'asistencia.*' => [
                 'required',
@@ -347,19 +354,34 @@ class ReunionController extends Controller
         ];
     }
 
+    /**
+     * El campo justificacion guarda el motivo de ausencia: solo se
+     * conserva cuando la persona queda ausente, para que un motivo
+     * escrito antes de cambiar el estado no quede asociado a un
+     * presente o a un pendiente.
+     */
     private function normalizarAsistencia(array $registro): array
     {
+        $estado = $registro['estado'] ?? 'pendiente';
+
         $justificacion = trim(
             (string) ($registro['justificacion'] ?? '')
         );
 
         return [
             'usuario_id' => (int) $registro['usuario_id'],
-            'estado' => $registro['estado'] ?? 'pendiente',
-            'justificacion' => $justificacion === ''
+            'estado' => $estado,
+            'justificacion' => $estado !== 'ausente' || $justificacion === ''
                 ? null
                 : $justificacion,
         ];
+    }
+
+    private function normalizarDescripcion(?string $descripcion): ?string
+    {
+        $descripcion = trim((string) $descripcion);
+
+        return $descripcion === '' ? null : $descripcion;
     }
 
     private function resumenAsistencia(

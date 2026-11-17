@@ -160,11 +160,12 @@ El listado y las operaciones quedan restringidos a Casas activas bajo la respons
 | --- | --- |
 | `id_casa` | Obligatorio al crear, entero positivo y Casa autorizada; no se modifica al editar |
 | `fecha` | Obligatoria, formato `YYYY-MM-DD` |
-| `tema` | Obligatorio, texto, máximo 150 |
+| `tema` | Obligatorio, texto, máximo 150; es el título de la reunión |
+| `descripcion` | Opcional o null, texto de máximo 3000; vacío se normaliza a null |
 | `asistencia` | Lista de objetos; al crear, si se omite se normaliza a `[]` |
 | `asistencia.*.usuario_id` | Obligatorio, entero positivo, no repetido |
 | `asistencia.*.estado` | Si se envía: `presente`, `ausente` o `pendiente`; si se omite: `pendiente` |
-| `asistencia.*.justificacion` | Opcional o null, texto de máximo 1000; vacío se normaliza a null |
+| `asistencia.*.justificacion` | Motivo de ausencia. Opcional o null, texto de máximo 1000; vacío se normaliza a null y solo se conserva cuando el estado es `ausente` |
 
 Cada objeto de asistencia admite únicamente `usuario_id`, `estado` y `justificacion`. Al crear se obtienen todos los integrantes activos de la Casa desde `casas_ids`, independientemente de su rol. Los integrantes no enviados se registran como pendientes; enviar una persona que no pertenece a ese conjunto produce `422`.
 
@@ -187,7 +188,7 @@ Eliminar una reunión elimina también su asistencia embebida. No elimina usuari
 
 Los filtros se combinan. Un ID positivo sin coincidencias devuelve `[]`; estos filtros no validan la existencia del recurso como una operación de edición. El período comprende desde el inicio UTC del mes hasta antes del inicio UTC del mes siguiente. Los resultados se ordenan por fecha e ID ascendentes.
 
-Cada elemento incluye `id_reunion`, `fecha`, `tema`, `id_casa`, `nombre_casa`, `id_lider`, `nombre_lider`, `cantidad_asistentes`, `cantidad_ausentes`, `cantidad_pendientes` y `asistencia`. Cada registro de asistencia incluye `usuario_id`, `nombre`, `estado` y `justificacion`.
+Cada elemento incluye `id_reunion`, `fecha`, `tema`, `descripcion`, `id_casa`, `nombre_casa`, `id_lider`, `nombre_lider`, `cantidad_asistentes`, `cantidad_ausentes`, `cantidad_pendientes` y `asistencia`. Cada registro de asistencia incluye `usuario_id`, `nombre`, `estado` y `justificacion`.
 
 El líder y los nombres se resuelven desde los documentos actuales; no constituyen una fotografía histórica de esos datos. Si la Casa o el usuario ya no están disponibles se devuelven textos de sustitución. El conjunto de ID de asistencia sí se conserva al editar la reunión.
 

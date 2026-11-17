@@ -179,6 +179,9 @@ class InformeReunionController extends Controller
                     ],
                 ],
                 'tema' => 1,
+                'descripcion' => [
+                    '$ifNull' => ['$descripcion', null],
+                ],
                 'id_casa' => 1,
                 'nombre_casa' => [
                     '$ifNull' => [

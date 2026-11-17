@@ -34,7 +34,7 @@ Mis reuniones
                     <tr>
                         <th>ID</th>
                         <th>Fecha</th>
-                        <th>Tema</th>
+                        <th>Título</th>
                         <th>Casa Iglesia</th>
                         <th>Presentes</th>
                         <th>Ausentes</th>
