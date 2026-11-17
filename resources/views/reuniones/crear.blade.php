@@ -92,7 +92,7 @@ Registrar reunión y asistencia
                     </div>
 
                     <div class="campo">
-                        <label for="tema">Tema *</label>
+                        <label for="tema">Título de la reunión *</label>
                         <input
                             id="tema"
                             name="tema"
@@ -103,12 +103,32 @@ Registrar reunión y asistencia
                         >
                     </div>
 
+                    <div class="campo">
+                        <label for="descripcion">
+                            Descripción de la reunión
+                        </label>
+
+                        <p id="ayuda-descripcion" class="ayuda">
+                            Cuenta brevemente qué se compartió, cómo estuvo
+                            el grupo y cualquier punto a recordar.
+                        </p>
+
+                        <textarea
+                            id="descripcion"
+                            name="descripcion"
+                            maxlength="3000"
+                            aria-describedby="ayuda-descripcion"
+                        >{{ old('descripcion') }}</textarea>
+                    </div>
+
                     <h3>Asistencia</h3>
 
                     <p class="ayuda">
-                        Revisa el estado de cada integrante.
-                        Las personas sin evaluar permanecen pendientes.
-                        Solo los presentes se cuentan como asistentes.
+                        Marca a cada integrante de la Casa como presente
+                        o ausente. Si alguien faltó, anota el motivo de su
+                        ausencia. Quien quede sin marcar permanece
+                        pendiente. Solo los presentes se cuentan como
+                        asistentes.
                     </p>
 
                     @forelse ($participantes as $participante)
@@ -132,11 +152,12 @@ Registrar reunión y asistencia
 
                             <div class="campo">
                                 <label for="estado-{{ $indice }}">
-                                    Estado *
+                                    Asistencia *
                                 </label>
 
                                 <select
                                     id="estado-{{ $indice }}"
+                                    data-estado-asistencia="motivo-{{ $indice }}"
                                     name="asistencia[{{ $indice }}][estado]"
                                     required
                                 >
@@ -163,15 +184,21 @@ Registrar reunión y asistencia
                                 </select>
                             </div>
 
-                            <label for="justificacion-{{ $indice }}">
-                                Justificación (opcional)
-                            </label>
+                            <div
+                                id="motivo-{{ $indice }}"
+                                @if ($estado !== 'ausente') hidden @endif
+                            >
+                                <label for="justificacion-{{ $indice }}">
+                                    Motivo de ausencia
+                                </label>
 
-                            <textarea
-                                id="justificacion-{{ $indice }}"
-                                name="asistencia[{{ $indice }}][justificacion]"
-                                maxlength="1000"
-                            >{{ old("asistencia.$indice.justificacion") }}</textarea>
+                                <textarea
+                                    id="justificacion-{{ $indice }}"
+                                    name="asistencia[{{ $indice }}][justificacion]"
+                                    maxlength="1000"
+                                    placeholder="Por ejemplo: enfermedad, viaje, trabajo…"
+                                >{{ old("asistencia.$indice.justificacion") }}</textarea>
+                            </div>
                         </fieldset>
                     @empty
                         <p>
@@ -204,6 +231,18 @@ Registrar reunión y asistencia
 @push('scripts')
 <script>
         const formulario = document.getElementById('formulario-reunion');
+
+        // El motivo de ausencia solo se muestra para quien queda ausente.
+        for (const selector of document.querySelectorAll('[data-estado-asistencia]')) {
+            const bloque = document.getElementById(selector.dataset.estadoAsistencia);
+
+            const actualizar = () => {
+                if (bloque) bloque.hidden = selector.value !== 'ausente';
+            };
+
+            selector.addEventListener('change', actualizar);
+            actualizar();
+        }
 
         if (formulario) {
             formulario.addEventListener('submit', async (evento) => {

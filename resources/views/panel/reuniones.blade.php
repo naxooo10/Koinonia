@@ -274,6 +274,13 @@ Informe de reuniones
                 )
             );
 
+            if (reunion.descripcion) {
+                const descripcion = crearElemento('p', reunion.descripcion);
+                descripcion.style.whiteSpace = 'pre-wrap';
+                descripcion.style.margin = '0 0 16px';
+                tarjeta.appendChild(descripcion);
+            }
+
             const datos = crearElemento('dl', null, 'datos');
 
             const partesFecha = String(reunion.fecha).split('-');
@@ -299,7 +306,7 @@ Informe de reuniones
             detalle.appendChild(
                 crearElemento(
                     'summary',
-                    'Ver asistencia y justificaciones'
+                    'Ver asistencia y motivos de ausencia'
                 )
             );
 
@@ -348,14 +355,16 @@ Informe de reuniones
 
                     persona.appendChild(lineaEstado);
 
-                    persona.appendChild(
-                        crearElemento(
-                            'p',
-                            registro.justificacion
-                                ? `Justificación: ${registro.justificacion}`
-                                : 'Sin justificación registrada.'
-                        )
-                    );
+                    if (registro.estado === 'ausente') {
+                        persona.appendChild(
+                            crearElemento(
+                                'p',
+                                registro.justificacion
+                                    ? `Motivo de ausencia: ${registro.justificacion}`
+                                    : 'Sin motivo de ausencia registrado.'
+                            )
+                        );
+                    }
 
                     lista.appendChild(persona);
                 }

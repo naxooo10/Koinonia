@@ -17,8 +17,8 @@ Editar reunión #{{ $reunion->id_reunion }}
     <h2>{{ $casa->nombre_casa }}</h2>
 
     <p class="ayuda">
-        Puedes corregir la fecha, el tema, los estados de asistencia y las
-        justificaciones. Se conservan los integrantes registrados
+        Puedes corregir la fecha, el título, la descripción, la asistencia
+        y los motivos de ausencia. Se conservan los integrantes registrados
         originalmente en esta reunión.
     </p>
 
@@ -51,7 +51,7 @@ Editar reunión #{{ $reunion->id_reunion }}
         </div>
 
         <div class="campo">
-            <label for="tema">Tema</label>
+            <label for="tema">Título de la reunión</label>
 
             <input
                 id="tema"
@@ -61,6 +61,22 @@ Editar reunión #{{ $reunion->id_reunion }}
                 value="{{ old('tema', $reunion->tema) }}"
                 required
             >
+        </div>
+
+        <div class="campo">
+            <label for="descripcion">Descripción de la reunión</label>
+
+            <p id="ayuda-descripcion" class="ayuda">
+                Cuenta brevemente qué se compartió, cómo estuvo el grupo
+                y cualquier punto a recordar.
+            </p>
+
+            <textarea
+                id="descripcion"
+                name="descripcion"
+                maxlength="3000"
+                aria-describedby="ayuda-descripcion"
+            >{{ old('descripcion', $reunion->descripcion ?? '') }}</textarea>
         </div>
 
         <h2>Asistencia registrada</h2>
@@ -76,10 +92,11 @@ Editar reunión #{{ $reunion->id_reunion }}
                 >
 
                 <div class="campo">
-                    <label for="estado-{{ $indice }}">Estado</label>
+                    <label for="estado-{{ $indice }}">Asistencia</label>
 
                     <select
                         id="estado-{{ $indice }}"
+                        data-estado-asistencia="motivo-{{ $indice }}"
                         name="asistencia[{{ $indice }}][estado]"
                         required
                     >
@@ -103,9 +120,13 @@ Editar reunión #{{ $reunion->id_reunion }}
                     </select>
                 </div>
 
-                <div class="campo">
+                <div
+                    class="campo"
+                    id="motivo-{{ $indice }}"
+                    @if (old("asistencia.$indice.estado", $registro->estado) !== 'ausente') hidden @endif
+                >
                     <label for="justificacion-{{ $indice }}">
-                        Justificación u observación
+                        Motivo de ausencia
                     </label>
 
                     <textarea
@@ -122,3 +143,19 @@ Editar reunión #{{ $reunion->id_reunion }}
         <button type="submit">Guardar cambios</button>
     </form>
 @endsection
+
+@push('scripts')
+<script>
+        // El motivo de ausencia solo se muestra para quien queda ausente.
+        for (const selector of document.querySelectorAll('[data-estado-asistencia]')) {
+            const bloque = document.getElementById(selector.dataset.estadoAsistencia);
+
+            const actualizar = () => {
+                if (bloque) bloque.hidden = selector.value !== 'ausente';
+            };
+
+            selector.addEventListener('change', actualizar);
+            actualizar();
+        }
+    </script>
+@endpush

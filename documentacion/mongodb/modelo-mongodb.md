@@ -110,7 +110,12 @@ Cada registro incluye:
 
 - usuario_id: referencia al usuario.
 - estado: presente, ausente o pendiente.
-- justificacion: texto opcional o null.
+- justificacion: motivo de ausencia; texto opcional o null.
+  Solo se conserva cuando el estado es ausente.
+
+La reunión guarda además tema (su título) y descripcion, un texto
+opcional o null con el resumen del encuentro. Las reuniones
+anteriores a este campo no lo tienen y se leen como null.
 
 Una persona sin evaluar permanece pendiente. No se considera
 automáticamente ausente.
